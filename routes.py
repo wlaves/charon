@@ -1,10 +1,14 @@
 from flask import request, jsonify, send_from_directory
-from models import load_state, add_ip, remove_ip, valid_ip, client_ip
-from config import ALIAS_DIR, TV_IP, DUMMY_IP
+from models import load_state, add_ip, remove_ip, valid_ip, client_ip, set_ip_route
+from config import ALIAS_DIR, TV_IP, DUMMY_IP, ROUTES
 
 def register_routes(app):
     @app.get("/")
     def index():
+        route_options = ""
+        for route_key, route_config in ROUTES.items():
+            route_options += f'<option value="{route_key}">{route_config["display_name"]}</option>'
+        
         return f"""
 <!doctype html>
 <html>
@@ -12,9 +16,15 @@ def register_routes(app):
 <title>brittv</title></head>
 <body style="font-family:system-ui;margin:2rem;max-width:40rem">
 <h1>brittv</h1>
-<label><input type="checkbox" id="tv"> tv</label>
+<label>tv: <select id="tv">
+  <option value="disabled">Disabled</option>
+  {route_options}
+</select></label>
 <br><br>
-<label><input type="checkbox" id="self"> self ({client_ip(request)})</label>
+<label>self ({client_ip(request)}): <select id="self">
+  <option value="disabled">Disabled</option>
+  {route_options}
+</select></label>
 <br><br>
 <h3>Routed:</h3>
 <div id="routed"></div>
@@ -23,33 +33,33 @@ async function getState() {{
   const r = await fetch("/state");
   const s = await r.json();
   const selfIp = "{client_ip(request)}";
-  document.getElementById("tv").checked = s.tv;
-  document.getElementById("self").checked = s.self;
+  document.getElementById("tv").value = s.tv || "disabled";
+  document.getElementById("self").value = s.self || "disabled";
   const routedDiv = document.getElementById("routed");
   routedDiv.innerHTML = "";
-  s.list.forEach(ip => {{
+  Object.entries(s.list).forEach(([ip, route]) => {{
     if (ip === "{DUMMY_IP}" || ip === "{TV_IP}" || ip === selfIp) return; // hide dummy, tv, self
     const label = document.createElement("label");
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.checked = true;
-    checkbox.addEventListener("change", e => setToggle(ip, e.target.checked));
-    label.appendChild(checkbox);
-    label.appendChild(document.createTextNode(" " + ip));
+    const select = document.createElement("select");
+    select.innerHTML = '<option value="disabled">Disabled</option>{route_options}';
+    select.value = route || "disabled";
+    select.addEventListener("change", e => setToggle(ip, e.target.value));
+    label.appendChild(document.createTextNode(ip + ": "));
+    label.appendChild(select);
     routedDiv.appendChild(label);
     routedDiv.appendChild(document.createElement("br"));
   }});
 }}
-async function setToggle(name, on) {{
+async function setToggle(name, route) {{
   await fetch("/toggle", {{
     method: "POST",
     headers: {{ "Content-Type": "application/json" }},
-    body: JSON.stringify({{ name, on }})
+    body: JSON.stringify({{ name, route }})
   }});
   await getState();
 }}
-document.getElementById("tv").addEventListener("change", e => setToggle("tv", e.target.checked));
-document.getElementById("self").addEventListener("change", e => setToggle("self", e.target.checked));
+document.getElementById("tv").addEventListener("change", e => setToggle("tv", e.target.value));
+document.getElementById("self").addEventListener("change", e => setToggle("self", e.target.value));
 getState();
 </script>
 </body>
@@ -60,34 +70,35 @@ getState();
     def state():
         state = load_state()
         me = client_ip(request)
-        tv_on = TV_IP in state
-        self_on = me in state
-        return jsonify({"tv": tv_on, "self": self_on, "list": sorted(state.keys())})
+        tv_route = state.get(TV_IP, {}).get("route") if TV_IP in state else None
+        self_route = state.get(me, {}).get("route") if me in state else None
+        
+        # Convert state to route mapping for frontend
+        list_with_routes = {}
+        for ip, data in state.items():
+            list_with_routes[ip] = data.get("route")
+        
+        return jsonify({
+            "tv": tv_route,
+            "self": self_route,
+            "list": list_with_routes
+        })
 
     @app.post("/toggle")
     def toggle():
         data = request.get_json(force=True)
         name = data.get("name")
-        on = bool(data.get("on"))
+        route = data.get("route")
 
         if name == "tv":
-            if on:
-                add_ip(TV_IP)
-            else:
-                remove_ip(TV_IP)
+            set_ip_route(TV_IP, route)
         elif name == "self":
             me = client_ip(request)
             if not valid_ip(me):
                 return ("bad ip", 400)
-            if on:
-                add_ip(me)
-            else:
-                remove_ip(me)
+            set_ip_route(me, route)
         elif valid_ip(name):
-            if on:
-                add_ip(name)
-            else:
-                remove_ip(name)
+            set_ip_route(name, route)
         else:
             return ("bad toggle", 400)
         return ("ok", 200)
