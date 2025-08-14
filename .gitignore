@@ -1,0 +1,25 @@
+# Python bytecode and cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+ENV/
+.env/
+.venv/
+
+# Backup files from editors
+*~
+\#*\#
+*.swp
+*.swo
+
+# Logs and runtime data
+*.log
+*.pid
+*.sock
+
+# OS-generated files
+.DS_Store
+Thumbs.db
