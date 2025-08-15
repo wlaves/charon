@@ -54,6 +54,20 @@ def sync_route_files(state):
                     f.write(ip + "\n")
             finally:
                 fcntl.flock(f, fcntl.LOCK_UN)
+    
+    # Create all_hosts.txt with all unique IPs from all routes
+    all_ips = set([dummy_ip])  # Always include dummy
+    for route_ips_set in route_ips.values():
+        all_ips.update(route_ips_set)
+    
+    all_hosts_file = alias_dir / "all_hosts.txt"
+    with open(all_hosts_file, "w") as f:
+        fcntl.flock(f, fcntl.LOCK_EX)
+        try:
+            for ip in sorted(all_ips):
+                f.write(ip + "\n")
+        finally:
+            fcntl.flock(f, fcntl.LOCK_UN)
 
 def set_ip_route(ip, route):
     """Set the route for an IP address."""
@@ -100,3 +114,12 @@ def clear_all_routes():
                 f.write(dummy_ip + "\n")
             finally:
                 fcntl.flock(f, fcntl.LOCK_UN)
+    
+    # Write dummy IP to all_hosts.txt
+    all_hosts_file = alias_dir / "all_hosts.txt"
+    with open(all_hosts_file, "w") as f:
+        fcntl.flock(f, fcntl.LOCK_EX)
+        try:
+            f.write(dummy_ip + "\n")
+        finally:
+            fcntl.flock(f, fcntl.LOCK_UN)

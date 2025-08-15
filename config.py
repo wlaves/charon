@@ -70,3 +70,9 @@ routes = {
         ]
     }
 }
+
+# Initialize all_hosts.txt with dummy IP if it doesn't exist
+all_hosts_file = alias_dir / "all_hosts.txt"
+if not all_hosts_file.exists():
+    with open(all_hosts_file, "w") as f:
+        f.write(dummy_ip + "\n")
