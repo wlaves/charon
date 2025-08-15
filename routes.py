@@ -1,22 +1,22 @@
 from flask import request, jsonify, send_from_directory
 from models import load_state, add_ip, remove_ip, valid_ip, client_ip, set_ip_route, clear_all_routes
-from config import ALIAS_DIR, TV_IP, DUMMY_IP, ROUTES
+from config import alias_dir, tv_ip, dummy_ip, routes
 import json
 
 def register_routes(app):
     @app.get("/")
     def index():
         route_options = ""
-        for route_key, route_config in ROUTES.items():
+        for route_key, route_config in routes.items():
             route_options += f'<option value="{route_key}">{route_config["display_name"]}</option>'
         
         return f"""
 <!doctype html>
 <html>
 <head><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>brittv</title></head>
+<title>Unlock Geolock</title></head>
 <body style="font-family:system-ui;margin:2rem;max-width:40rem">
-<h1>brittv</h1>
+<h1>Unlock Geolock</h1>
 <label>tv: <select id="tv">
   <option value="disabled">Disabled</option>
   {route_options}
@@ -34,7 +34,7 @@ def register_routes(app):
 <br><br>
 <div id="links"></div>
 <script>
-const ROUTES = {json.dumps(ROUTES)};
+const ROUTES = {json.dumps(routes)};
 
 async function getState() {{
   const r = await fetch("/state");
@@ -45,7 +45,7 @@ async function getState() {{
   const routedDiv = document.getElementById("routed");
   routedDiv.innerHTML = "";
   Object.entries(s.list).forEach(([ip, route]) => {{
-    if (ip === "{DUMMY_IP}" || ip === "{TV_IP}" || ip === selfIp) return; // hide dummy, tv, self
+    if (ip === "{dummy_ip}" || ip === "{tv_ip}" || ip === selfIp) return; // hide dummy, tv, self
     const label = document.createElement("label");
     const select = document.createElement("select");
     select.innerHTML = '<option value="disabled">Disabled</option>{route_options}';
@@ -126,7 +126,7 @@ getState();
     def state():
         state = load_state()
         me = client_ip(request)
-        tv_route = state.get(TV_IP, {}).get("route") if TV_IP in state else None
+        tv_route = state.get(tv_ip, {}).get("route") if tv_ip in state else None
         self_route = state.get(me, {}).get("route") if me in state else None
         
         # Convert state to route mapping for frontend
@@ -147,7 +147,7 @@ getState();
         route = data.get("route")
 
         if name == "tv":
-            set_ip_route(TV_IP, route)
+            set_ip_route(tv_ip, route)
         elif name == "self":
             me = client_ip(request)
             if not valid_ip(me):
@@ -166,7 +166,7 @@ getState();
 
     @app.get("/alias/<path:fname>")
     def alias(fname):
-        return send_from_directory(ALIAS_DIR, fname, mimetype="text/plain")
+        return send_from_directory(alias_dir, fname, mimetype="text/plain")
 
     @app.get("/debugip")
     def debugip():

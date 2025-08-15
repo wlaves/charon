@@ -2,7 +2,7 @@ from ipaddress import ip_address
 import fcntl
 import json
 import time
-from config import STATE_FILE, DUMMY_IP, ROUTES, ALIAS_DIR
+from config import state_file, dummy_ip, routes, alias_dir
 
 def valid_ip(ip):
     try:
@@ -13,40 +13,40 @@ def valid_ip(ip):
 
 def load_state():
     """Load state, keeping all IPs without expiry."""
-    if not STATE_FILE.exists():
-        return {DUMMY_IP: {"timestamp": 0, "route": None}}
+    if not state_file.exists():
+        return {dummy_ip: {"timestamp": 0, "route": None}}
     try:
-        with open(STATE_FILE, "r") as f:
+        with open(state_file, "r") as f:
             data = json.load(f)
     except Exception:
-        return {DUMMY_IP: {"timestamp": 0, "route": None}}
+        return {dummy_ip: {"timestamp": 0, "route": None}}
     
     # Ensure dummy IP is always present
-    if DUMMY_IP not in data:
-        data[DUMMY_IP] = {"timestamp": 0, "route": None}
+    if dummy_ip not in data:
+        data[dummy_ip] = {"timestamp": 0, "route": None}
     
     return data
 
 def save_state(state):
-    with open(STATE_FILE, "w") as f:
+    with open(state_file, "w") as f:
         json.dump(state, f)
 
 def sync_route_files(state):
     """Write route files based on current state."""
     # Create route-specific IP sets
     route_ips = {}
-    for route_key in ROUTES:
-        route_ips[route_key] = set([DUMMY_IP])  # Always include dummy
+    for route_key in routes:
+        route_ips[route_key] = set([dummy_ip])  # Always include dummy
     
     # Distribute IPs to their routes
     for ip, data in state.items():
         route = data.get("route")
-        if route and route in ROUTES:
+        if route and route in routes:
             route_ips[route].add(ip)
     
     # Write each route file
-    for route_key, route_config in ROUTES.items():
-        file_path = ALIAS_DIR / route_config["file_name"]
+    for route_key, route_config in routes.items():
+        file_path = alias_dir / route_config["file_name"]
         with open(file_path, "w") as f:
             fcntl.flock(f, fcntl.LOCK_EX)
             try:
@@ -64,7 +64,7 @@ def set_ip_route(ip, route):
     
     if route == "disabled" or route is None:
         # Remove from state if disabling
-        if ip != DUMMY_IP and ip in state:
+        if ip != dummy_ip and ip in state:
             del state[ip]
     else:
         # Add/update IP with route
@@ -88,15 +88,15 @@ def client_ip(req):
 
 def clear_all_routes():
     """Clear all IPs from all routes, keeping only dummy IP in each file."""
-    state = {DUMMY_IP: {"timestamp": 0, "route": None}}
+    state = {dummy_ip: {"timestamp": 0, "route": None}}
     save_state(state)
     
     # Write dummy IP to all route files
-    for route_key, route_config in ROUTES.items():
-        file_path = ALIAS_DIR / route_config["file_name"]
+    for route_key, route_config in routes.items():
+        file_path = alias_dir / route_config["file_name"]
         with open(file_path, "w") as f:
             fcntl.flock(f, fcntl.LOCK_EX)
             try:
-                f.write(DUMMY_IP + "\n")
+                f.write(dummy_ip + "\n")
             finally:
                 fcntl.flock(f, fcntl.LOCK_UN)
