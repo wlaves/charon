@@ -1,6 +1,7 @@
 from flask import request, jsonify, send_from_directory
-from models import load_state, add_ip, remove_ip, valid_ip, client_ip, set_ip_route
+from models import load_state, add_ip, remove_ip, valid_ip, client_ip, set_ip_route, clear_all_routes
 from config import ALIAS_DIR, TV_IP, DUMMY_IP, ROUTES
+import json
 
 def register_routes(app):
     @app.get("/")
@@ -28,7 +29,13 @@ def register_routes(app):
 <br><br>
 <h3>Routed:</h3>
 <div id="routed"></div>
+<br>
+<button id="clearAll" style="padding:0.5rem 1rem;background:#dc3545;color:white;border:none;border-radius:4px;cursor:pointer;font-weight:bold">Clear All</button>
+<br><br>
+<div id="links"></div>
 <script>
+const ROUTES = {json.dumps(ROUTES)};
+
 async function getState() {{
   const r = await fetch("/state");
   const s = await r.json();
@@ -49,7 +56,42 @@ async function getState() {{
     routedDiv.appendChild(label);
     routedDiv.appendChild(document.createElement("br"));
   }});
+  updateLinks();
 }}
+
+function updateLinks() {{
+  const selfRoute = document.getElementById("self").value;
+  const linksDiv = document.getElementById("links");
+  linksDiv.innerHTML = "";
+  
+  // Only show links for Self route
+  if (selfRoute !== "disabled" && ROUTES[selfRoute] && ROUTES[selfRoute].links && ROUTES[selfRoute].links.length > 0) {{
+    const header = document.createElement("h4");
+    header.textContent = ROUTES[selfRoute].display_name;
+    header.style.fontWeight = "bold";
+    header.style.marginBottom = "0.5rem";
+    linksDiv.appendChild(header);
+    
+    const list = document.createElement("ul");
+    list.style.marginTop = "0";
+    list.style.marginBottom = "1rem";
+    
+    ROUTES[selfRoute].links.forEach(linkData => {{
+      const name = linkData[0];
+      const url = linkData[1];
+      const item = document.createElement("li");
+      const link = document.createElement("a");
+      link.href = url.startsWith("http") ? url : "https://" + url;
+      link.textContent = name;
+      link.target = "_blank";
+      item.appendChild(link);
+      list.appendChild(item);
+    }});
+    
+    linksDiv.appendChild(list);
+  }}
+}}
+
 async function setToggle(name, route) {{
   await fetch("/toggle", {{
     method: "POST",
@@ -58,8 +100,22 @@ async function setToggle(name, route) {{
   }});
   await getState();
 }}
-document.getElementById("tv").addEventListener("change", e => setToggle("tv", e.target.value));
-document.getElementById("self").addEventListener("change", e => setToggle("self", e.target.value));
+
+async function clearAll() {{
+  if (confirm("Clear all routes? This will reset all files to only contain the dummy IP.")) {{
+    await fetch("/clear", {{ method: "POST" }});
+    await getState();
+  }}
+}}
+
+document.getElementById("tv").addEventListener("change", e => {{
+  setToggle("tv", e.target.value);
+}});
+document.getElementById("self").addEventListener("change", e => {{
+  setToggle("self", e.target.value);
+  updateLinks();
+}});
+document.getElementById("clearAll").addEventListener("click", clearAll);
 getState();
 </script>
 </body>
@@ -103,6 +159,11 @@ getState();
             return ("bad toggle", 400)
         return ("ok", 200)
 
+    @app.post("/clear")
+    def clear():
+        clear_all_routes()
+        return ("ok", 200)
+
     @app.get("/alias/<path:fname>")
     def alias(fname):
         return send_from_directory(ALIAS_DIR, fname, mimetype="text/plain")
@@ -115,3 +176,4 @@ getState();
             "X-Forwarded-For": request.headers.get("X-Forwarded-For"),
             "all_headers": dict(request.headers)
         }
+

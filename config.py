@@ -8,12 +8,17 @@ STATE_FILE = ALIAS_DIR / "state.json"
 # Network configuration
 TV_IP = "192.168.1.170"       # set your Smart TV's IP
 DUMMY_IP = "192.0.2.1"        # reserved IP that never expires
-EXPIRY_SECONDS = 6 * 3600     # 6 hours
 
 # Routing configuration
 ROUTES = {
     "uk": {
         "display_name": "UK",
         "file_name": "brittv_hosts.txt",
+        "links": [
+            ("BBC iPlayer", "https://bbc.co.uk/iplayer"),
+            ("ITV Hub", "https://itv.com/hub"),
+            ("Channel 4", "https://channel4.com"),
+        ]
     }
 }
+
