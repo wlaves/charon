@@ -6,7 +6,8 @@ def create_app():
     register_routes(app)
     return app
 
-APP = create_app()
+app = create_app()
+APP = app  # Compatibility alias for gunicorn service
 
 if __name__ == "__main__":
-    APP.run(host="127.0.0.1", port=5000)
+    app.run(host="127.0.0.1", port=5000)
