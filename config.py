@@ -3,7 +3,6 @@ from pathlib import Path
 # Directory and file paths
 ALIAS_DIR = Path("/var/www/alias")
 ALIAS_DIR.mkdir(parents=True, exist_ok=True)
-LIST_FILE = ALIAS_DIR / "brittv_hosts.txt"  # This will be deprecated
 STATE_FILE = ALIAS_DIR / "state.json"
 
 # Network configuration
@@ -15,6 +14,6 @@ EXPIRY_SECONDS = 6 * 3600     # 6 hours
 ROUTES = {
     "uk": {
         "display_name": "UK",
-        "file_name": "brittv.txt",
+        "file_name": "brittv_hosts.txt",
     }
 }
