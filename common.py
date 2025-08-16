@@ -10,13 +10,7 @@ available_routes = {
             ("ADtv", "https://adtv.ae")
         ]
     },
-    "ar": {
-        "display_name": "🇦🇷 Argentina",
-        "file_name": "ar_hosts.txt",
-        "links": [
-            ("Cont.ar", "https://cont.ar")
-        ]
-    },
+    # "ar" entry removed (Cont.ar service was shut down in 2024)
     "at": {
         "display_name": "🇦🇹 Austria",
         "file_name": "at_hosts.txt",
@@ -32,7 +26,7 @@ available_routes = {
             ("SBS On Demand", "https://www.sbs.com.au/ondemand"),
             ("9Now", "https://www.9now.com.au"),
             ("10 play", "https://10play.com.au"),
-            ("7plus", "https://7plus.com.au"),
+            ("7plus", "https://7plus.com.au")
         ]
     },
     "ba": {
@@ -73,7 +67,7 @@ available_routes = {
         "links": [
             ("CBC Gem", "https://gem.cbc.ca"),
             ("CTV", "https://www.ctv.ca"),
-            ("Global TV", "https://www.globaltv.com"),
+            ("Global TV", "https://www.globaltv.com")
         ]
     },
     "ch": {
@@ -173,15 +167,15 @@ available_routes = {
         "file_name": "ie_hosts.txt",
         "links": [
             ("RTÉ Player", "https://www.rte.ie/player"),
-            ("Virgin Media Television", "https://www.virginmediatelevision.ie/player"),
+            ("Virgin Media Television", "https://www.virginmediatelevision.ie/player")
         ]
     },
     "il": {
         "display_name": "🇮🇱 Israel",
         "file_name": "il_hosts.txt",
         "links": [
-            ("Kan", "https://www.kan.org.il/live/tv.aspx"),
-            ("Reshet", "https://www.reshet.tv"),
+            ("Kan", "https://www.kan.org.il/lobby/kan-box/"),
+            ("Reshet 13", "https://13tv.co.il")
         ]
     },
     "in": {
@@ -193,8 +187,8 @@ available_routes = {
             ("Zee5", "https://www.zee5.com"),
             ("Voot", "https://www.voot.com"),
             ("MX Player", "https://www.mxplayer.in"),
-            ("JioCinema", "https://www.jiocinema.com"),
-            ("ALTBalaji", "https://www.altbalaji.com"),
+            ("JioCinema", "https://www.jiocinema.com")
+            # ALTBalaji removed (service banned in 2025)
         ]
     },
     "is": {
@@ -232,15 +226,15 @@ available_routes = {
         "display_name": "🇱🇧 Lebanon",
         "file_name": "lb_hosts.txt",
         "links": [
-            ("LBCI", "https://www.lbcgroup.tv"),
-            ("MTV Lebanon", "https://www.mtv.com.lb")
+            ("LBCI", "https://www.lbcgroup.tv/shows/en"),
+            ("MTV Lebanon", "https://www.mtv.com.lb/vod")
         ]
     },
     "lk": {
         "display_name": "🇱🇰 Sri Lanka",
         "file_name": "lk_hosts.txt",
         "links": [
-            ("Rupavahini", "http://www.rupavahini.lk")
+            ("Rupavahini", "http://tv.rupavahini.lk")
         ]
     },
     "lt": {
@@ -298,7 +292,7 @@ available_routes = {
         "file_name": "nz_hosts.txt",
         "links": [
             ("TVNZ+", "https://www.tvnz.co.nz"),
-            ("ThreeNow", "https://www.threenow.co.nz"),
+            ("ThreeNow", "https://www.threenow.co.nz")
         ]
     },
     "pe": {
@@ -431,8 +425,8 @@ available_routes = {
             ("My5", "https://www.my5.tv"),
             ("U (UKTV Play)", "https://uktvplay.co.uk"),
             ("STV Player", "https://player.stv.tv"),
-            ("S4C Clic", "https://www.s4c.cymru/clic"),
-            ("All 4", "https://www.channel4.com"),
+            ("S4C Clic", "https://www.s4c.cymru/clic")
+            # "All 4" removed (merged into Channel 4 brand)
         ]
     },
     "vn": {
